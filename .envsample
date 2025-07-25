@@ -1,15 +1,15 @@
 # Digitanimal related
-DIGITANIMAL_USER=
-DIGITANIMAL_PASS=
+DIGITANIMAL_USER= # Digitanimal user credentials
+DIGITANIMAL_PASS= # Digitanimal user credentials
 
 # POSTGRES related
-POSTGRES_HOST=
-POSTGRES_PORT=
-POSTGRES_DB=
-POSTGRES_USER=
-POSTGRES_PASS=
-POSTGRES_TABLE_NAME=
+POSTGRES_HOST= # Database host
+POSTGRES_PORT= # Database port
+POSTGRES_DB= # Database name
+POSTGRES_USER= # Database user credentials
+POSTGRES_PASS= # Database user credentials
+POSTGRES_TABLE_NAME= # Device long-term data table
 
 # Other
-LAST_YEAR_FLAG=
-TEMP_FOLDER=
+LAST_YEAR_FLAG= # TRUE or FALSE
+TEMP_FOLDER= # Path for saving csv data outputs
