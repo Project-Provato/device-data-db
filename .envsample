@@ -11,5 +11,4 @@ POSTGRES_PASS= # Database user credentials
 POSTGRES_TABLE_NAME= # Device long-term data table
 
 # Other
-LAST_YEAR_FLAG= # TRUE or FALSE
-TEMP_FOLDER= # Path for saving csv data outputs
+LAST_YEAR_FLAG= # TRUE for whole year, else its only previous day

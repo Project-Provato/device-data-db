@@ -4,58 +4,6 @@ import time
 from helper import print_log
 
 
-def create_csv_list(device_data):
-    data = [
-        [
-            "id_collar", 
-            "timestamp",
-            
-            "pos_x",
-            "pos_y",
-            "pos_z",
-            
-            "std_x",
-            "std_y",
-            "std_z",
-            
-            "max_x",
-            "max_y",
-            "max_z",
-            
-            "temperature",
-            "longitude",
-            "latitude"
-        ]
-    ]
-    
-    for entry in device_data:
-        
-        row = [
-            entry['properties']['id_collar'],
-            entry['properties']['time_stamp'],
-            
-            entry['properties']['pos_x'],
-            entry['properties']['pos_y'],
-            entry['properties']['pos_z'],
-            
-            entry['properties']['std_x'],
-            entry['properties']['std_y'],
-            entry['properties']['std_z'],
-            
-            entry['properties']['max_x'],
-            entry['properties']['max_y'],
-            entry['properties']['max_z'],
-            
-            entry['properties']['temperature'],
-            entry['geometry']['coordinates'][0],
-            entry['geometry']['coordinates'][1]
-        ]
-        
-        data.append(row)
-    
-    return data
-
-
 def connect_with_retry(params, retry_delay=5):
     while True:
         try:

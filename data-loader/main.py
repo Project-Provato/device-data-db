@@ -1,12 +1,10 @@
-from datetime import date, timedelta
-from datetime import timedelta
 import requests
 import csv
 import os
 from dotenv import load_dotenv
-from digitanimal import add_info_to_account, device_endpoint
+from digitanimal import add_info_to_account
 from helper import print_log
-from timescale import create_csv_list, connect_with_retry, copy_data_to_db
+from timescale import connect_with_retry, copy_data_to_db
 
 
 def main(account, timescale_connector, csv_folder):
@@ -41,11 +39,15 @@ def main(account, timescale_connector, csv_folder):
     
     for farm in res_json['farmsPHP']:
         
+        coords = farm['figure']['geometry']['coordinates'][0]
+        
+        polygon = "(" + ",".join(f"({x},{y})" for x,y in coords) + f",({coords[0][0]},{coords[0][1]})" ")"
+        
         farms.append([
             int(farm['id']),
             farm['name'],
             farm['area'],
-            farm['figure']['geometry']['coordinates'][0],
+            polygon,
             1
         ])
         
@@ -180,13 +182,15 @@ if __name__ == "__main__":
         'user': DB_USER,
         'password': DB_PASS
     }
+    
+    TEMP_FOLDER = os.getenv("TEMP_FOLDER")
 
     conn = connect_with_retry(DB_PARAMS)
     
     main(
         account=account,
         timescale_connector=conn,
-        csv_folder='./data'
+        csv_folder=TEMP_FOLDER
     )
 
     # End connections

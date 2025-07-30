@@ -13,7 +13,7 @@ CREATE TABLE USERS (
     password_hash TEXT
 );
 
-INSERT INTO USERS(id, first_name, last_name, email, password_hash) VALUES (1, '', '', '', '');
+-- INSERT INTO USERS(id, first_name, last_name, email, password_hash) VALUES (1, '', '', '', '');
 
 CREATE TABLE ANIMALS (
     id CHARACTER(5) PRIMARY KEY NOT NULL,
@@ -30,13 +30,13 @@ CREATE TABLE ANIMALS (
 CREATE TABLE FARMS (
     id INT PRIMARY KEY NOT NULL,
     farm_name TEXT,
-    AREA REAL,
-    coordinates TEXT,
+    area REAL,
+    coordinates polygon,
     id_user INT
     -- CONSTRAINT fk_parent FOREIGN KEY (id_user) REFERENCES USERS(id) ON DELETE SET NULL
 );
 
-INSERT INTO FARMS(id, farm_name, area, coordinates, id_user) VALUES (0, '', 0, '', 1);
+-- INSERT INTO FARMS(id, farm_name, area, coordinates, id_user) VALUES (0, '', 0, '', 1);
 
 CREATE TABLE DEVICE_DATA (
     id UUID DEFAULT uuid_generate_v4(),
@@ -52,8 +52,7 @@ CREATE TABLE DEVICE_DATA (
     max_y REAL,
     max_z REAL,
     temperature REAL,
-    longitude DOUBLE PRECISION,
-    latitude DOUBLE PRECISION
+    coordinates POINT
     -- CONSTRAINT fk_parent FOREIGN KEY (id_collar) REFERENCES DEVICES(id) ON DELETE SET NULL
 );
 

@@ -23,8 +23,7 @@ def create_csv_list(device_data):
             "max_z",
             
             "temperature",
-            "longitude",
-            "latitude"
+            "coordinates"
         ]
     ]
     
@@ -47,8 +46,8 @@ def create_csv_list(device_data):
             entry['properties']['max_z'],
             
             entry['properties']['temperature'],
-            entry['geometry']['coordinates'][0],
-            entry['geometry']['coordinates'][1]
+            
+            f"({entry['geometry']['coordinates'][0]}, {entry['geometry']['coordinates'][1]})"
         ]
         
         data.append(row)
@@ -70,7 +69,7 @@ def connect_with_retry(params, retry_delay=5):
 
 def copy_data_to_db(table_name, conn, data):
 
-    COLUMNS = 'id_collar,created_at,pos_x,pos_y,pos_z,std_x,std_y,std_z,max_x,max_y,max_z,temperature,longitude,latitude'
+    COLUMNS = 'id_collar,created_at,pos_x,pos_y,pos_z,std_x,std_y,std_z,max_x,max_y,max_z,temperature,coordinates'
 
     with conn.cursor() as cur:
         insert_query = f"""

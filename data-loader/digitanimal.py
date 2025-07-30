@@ -2,13 +2,6 @@ import requests
 from helper import print_log
 
 
-def device_endpoint(user_id, device_id, init_time, end_time):
-    
-    endpoint = f"https://www.digitanimal-labs.com/datanimal/api/collars/getHistoryItmReadings.php?d_ini={init_time}&d_fin={end_time}&id_user={user_id}&id_collar={device_id}&filter_data=1"
-    
-    return endpoint
-
-
 def client_endpoint(client_id):
     endpoint = f"https://www.digitanimal-labs.com/datanimal/api/collars/search.php?table=collar&search=_id_client&value={client_id}"
     return endpoint

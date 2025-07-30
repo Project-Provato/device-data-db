@@ -36,6 +36,8 @@ def main(account, timescale_connector, table_name, date_init, date_end, csv_fold
         csv_data = create_csv_list(data_history)
 
         file_path = f"{csv_folder}/{device}.csv"
+        
+        # print_log(f"Trying to save on {file_path}")
 
         with open(file_path, 'w', newline='') as f:
             writer = csv.writer(f)

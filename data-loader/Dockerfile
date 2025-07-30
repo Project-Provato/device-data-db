@@ -2,7 +2,7 @@ FROM python:3.11.9
 
 WORKDIR /usr/app
 
-RUN ["mkdir", "data"]
+RUN ["mkdir", "-p", "/data/metadata"]
 
 COPY requirements.txt requirements.txt
 
@@ -24,6 +24,7 @@ ENV POSTGRES_TABLE_NAME=DEVICE_DATA
 
 # Other
 ENV LAST_YEAR_FLAG=FALSE
-ENV TEMP_FOLDER=/usr/app/data
+ENV TEMP_FOLDER=/data/metadata
 
-ENTRYPOINT ["python", "main.py"]
+# Shell run to save output inside the container
+ENTRYPOINT ["sh", "-c", "python main.py >> /data/load.logs 2>&1"]
