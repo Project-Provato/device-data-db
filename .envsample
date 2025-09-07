@@ -8,7 +8,6 @@ POSTGRES_PORT= # Database port
 POSTGRES_DB= # Database name
 POSTGRES_USER= # Database user credentials
 POSTGRES_PASS= # Database user credentials
-POSTGRES_TABLE_NAME= # Device long-term data table
 
 # Other
 LAST_YEAR_FLAG= # TRUE for whole year, else its only previous day

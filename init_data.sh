@@ -1,16 +1,13 @@
 #!/bin/bash
 
-docker build -t data-loader ./data-loader/.
+docker build --no-cache -t data-loader ./init_data_load/.
 echo "Container built!"
 
-docker run \
+docker run --rm \
     --name data-loader \
     --env-file ./.env \
     -v provato-logs-load:/data  \
     --network host \
     data-loader
 
-echo "Container created!"
-
-docker container rm data-loader
-echo "Container deleted!"
+echo "Container run!"

@@ -1,62 +1,79 @@
--- for unique UUID and not auto-increment
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS timescaledb;
+-- CREATE EXTENSION IF NOT EXISTS timescaledb;
 
-
--- initializing tables...
-
-CREATE TABLE USERS (
-    id INT PRIMARY KEY NOT NULL,
-    first_name TEXT,
-    last_name TEXT,
-    email TEXT,
-    password_hash TEXT
+CREATE TABLE FARMS_API (
+    id serial PRIMARY KEY,
+    id_api int UNIQUE NOT NULL,
+    name char(100),
+    coordinates polygon
 );
 
--- INSERT INTO USERS(id, first_name, last_name, email, password_hash) VALUES (1, '', '', '', '');
-
-CREATE TABLE ANIMALS (
-    id CHARACTER(5) PRIMARY KEY NOT NULL,
-    animal_name TEXT,
-    date_birth TIMESTAMPTZ,
-    genus TEXT,
-    sex TEXT,
-    breed TEXT,
-    breed_short CHARACTER(3),
-    id_farm INT
-    -- CONSTRAINT fk_parent FOREIGN KEY (id_farm) REFERENCES FARMS(id) ON DELETE SET NULL
+CREATE TABLE ANIMALS_API (
+    id serial PRIMARY KEY,
+    id_api char(5) UNIQUE NOT NULL,
+    name char(100),
+    date_birth date,
+    type char(100),
+    sex char(100),
+    breed char(100),
+    breed_short char(100),
+    farm_id_api int,
+    farm_id int,
+    FOREIGN KEY (farm_id_api) REFERENCES FARMS_API(id_api)
 );
 
-CREATE TABLE FARMS (
-    id INT PRIMARY KEY NOT NULL,
-    farm_name TEXT,
-    area REAL,
-    coordinates polygon,
-    id_user INT
-    -- CONSTRAINT fk_parent FOREIGN KEY (id_user) REFERENCES USERS(id) ON DELETE SET NULL
+CREATE TABLE DEVICES_API (
+    id serial PRIMARY KEY,
+    id_api char(5) UNIQUE NOT NULL,
+    type char(100),
+    FOREIGN KEY (id_api) REFERENCES ANIMALS_API(id_api)
 );
 
--- INSERT INTO FARMS(id, farm_name, area, coordinates, id_user) VALUES (0, '', 0, '', 1);
-
-CREATE TABLE DEVICE_DATA (
-    id UUID DEFAULT uuid_generate_v4(),
-    id_collar CHARACTER(5),
-    created_at TIMESTAMPTZ NOT NULL,
-    pos_x REAL,
-    pos_y REAL,
-    pos_z REAL,
-    std_x REAL,
-    std_y REAL,
-    std_z REAL,
-    max_x REAL,
-    max_y REAL,
-    max_z REAL,
-    temperature REAL,
-    coordinates POINT
-    -- CONSTRAINT fk_parent FOREIGN KEY (id_collar) REFERENCES DEVICES(id) ON DELETE SET NULL
+CREATE TABLE DEVICE_DATA_API (
+    id serial PRIMARY KEY,
+    id_api char(5) UNIQUE NOT NULL,
+    created_at timestamp NOT NULL,
+    pos_x real,
+    pos_y real,
+    pos_z real,
+    std_x real,
+    std_y real,
+    std_z real,
+    max_x real,
+    max_y real,
+    max_z real,
+    temperature real,
+    coordinates point,
+    FOREIGN KEY (id_api) REFERENCES DEVICES_API(id_api)
 );
 
-ALTER TABLE device_data ADD PRIMARY KEY (id_collar, created_at);
-CREATE INDEX index_device_data_collar ON DEVICE_DATA(id_collar);
+CREATE TABLE DEVICE_DATA_SEVEN_API (
+  id 					serial PRIMARY KEY,
+  id_api 				char(5) UNIQUE NOT NULL,
+  created_at 			timestamp,
+  coordinates 			point,
+  raw_acc_x 			real,
+  raw_acc_y 			real,
+  raw_acc_z 			real,
+  temperature 			real,
+  flag_alarm 			smallint,
+  flag_temperature 		smallint,
+  flag_distance 		smallint,
+  flag_activity 		smallint,
+  flag_position 		smallint,
+  flag_outside_farm 	smallint,
+  temperature_current 	real,
+  temperature_weekly 	real,
+  temperature_herd 		real,
+  activity_current 		real,
+  activity_weekly 		real,
+  activity_herd 		real,
+  distance_current 		real,
+  distance_weekly 		real,
+  distance_herd 		real,
+  FOREIGN KEY (id_api) REFERENCES DEVICES_API(id_api)
+);
 
-SELECT create_hypertable('device_data', 'created_at');
+-- ALTER TABLE device_data ADD PRIMARY KEY (id_collar, created_at);
+-- CREATE INDEX index_device_data_collar ON DEVICE_DATA(id_collar);
+
+-- SELECT create_hypertable('device_data', 'created_at');
