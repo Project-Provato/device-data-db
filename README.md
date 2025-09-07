@@ -2,22 +2,21 @@
 
 This repository is part of the PROVATO research project funded by the Agrarian EU Horizon project.
 
-The repository contains three Dockerized scripts that perform the following tasks:
-1. [data-loader directory](./data-loader/) – Loads user and animal metadata from the Digitanimal API into a Timescale database.
-2. Not ready ❌ – Retrieves short-term (hourly) data provided by Digitanimal devices and injects it into a Timescale database.
-3. [data-retrieval directory](./data-retrieval/) – Retrieves long-term data provided by Digitanimal devices and injects it into a Timescale database.
+The repository contains two Dockerized scripts that perform the following tasks:
+1. [init_data_load directory](./init_data_load/) – Loads farms, animals and devices from the Digitanimal API into a Postgres database.
+2. [live_data_load directory](./live_data_load/) – Retrieves long-term data provided by Digitanimal devices and injects it into a Postgres database. This data is filtered by Digitanimal, keeping only valid data throughout the day. Only data up to 1 day ago can be retrieved.
 
 Note: The repository includes a Docker Compose file that creates a database for testing purposes using the Dockerized scripts.
 
 Find more information here about:
-- [PROVATO](https://www.linkedin.com/showcase/provatoproject/)
+- [Research Project PROVATO](https://www.linkedin.com/showcase/provatoproject/)
 - [Digitanimal Livestock Tracking Devices](https://digitanimal.com/)
 
 ## Prerequisites
 
 A machine running Docker CLI version >= 25.0 and Docker Desktop >= 4.4.0 should have no issues running the scripts.
 
-Running the scripts also assumes that a Timescale database is available at `POSTGRES_HOST:POSTGRES_PORT`. Using TimescaleDB version >= 2.19.3 with PostgreSQL version >= 14 should work without issues.
+Running the scripts also assumes that a Postgres database is available at `POSTGRES_HOST:POSTGRES_PORT`. Using PostgreSQL version >= 14 should work without issues.
 
 ### Environment Variables ❗
 
@@ -41,23 +40,24 @@ docker compose down
 
 ## How to Run
 
-Once a Timescale database is available and the environment variables are set up, the containers can be run using the appropriate scripts. Each script creates logs saved in the Git-ignored `data` directory of the project.
+Once a Timescale database is available and the environment variables are set up, the containers can be run using the appropriate scripts. 
+1. [init_data.sh](./scripts/init_data.sh) – Loads farms, animals and devices from the Digitanimal API into a Postgres database.
+2. [live_Data.sh](./scripts/live_data.sh) – Retrieves long-term data provided by Digitanimal devices and injects it into a Postgres database.
 
-1. [data-load.sh](./data-load.sh) – Loads user and animal metadata from the Digitanimal API into a Timescale database.
-2. Not ready ❌ – Retrieves short-term data provided by Digitanimal devices and injects it into a Timescale database.
-3. [data-retrieval.sh](./data-retrieval.sh) – Retrieves long-term data provided by Digitanimal devices and injects it into a Timescale database.
+❗**Before running the scripts** two docker volumes need to be created that will save the logs of the python scritps.
 
+```bash
+docker volume create provato-logs-retrieve
+docker volume create provato-logs-load
+```
 
 ## Scheduling with Cron
 
 The data retrieval scripts can be added as cron tasks on a machine to inject new data every thirty minutes for the short-term data or every day for the long-term data.
 
-Below are the cron settings. Modify the `PROJECTPATH` to the appropriate path and ensure the user running the tasks has permissions to build, run, and delete Docker containers.
+Below are the cron settings. Modify the project path to the appropriate path and ensure the user running the tasks has permissions to build, run, and delete Docker containers.
 
 ```bash
-# Short-term data every 30 minutes
-*/30 * * * * cd /path/to/project && /bin/bash ./data-retrieval-short.sh
-
 # Long-term data every day at 9 AM
 0 9 * * * cd /path/to/project && /bin/bash ./data-retrieval.sh
 ```
