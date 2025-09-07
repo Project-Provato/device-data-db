@@ -5,11 +5,11 @@ import csv
 import os
 from dotenv import load_dotenv
 from digitanimal import add_info_to_account, device_endpoint
-from helper import print_log
-from timescale import create_csv_list, connect_with_retry, copy_data_to_db
+from helper import print_log # request_json_auth
+from timescale import connect_with_retry, copy_data_to_db
 
 
-def main(account, timescale_connector, table_name, date_init, date_end, csv_folder):
+def main(account, timescale_connector, date_init, date_end, csv_folder):
 
     print_log(50*"-")
     
@@ -22,7 +22,6 @@ def main(account, timescale_connector, table_name, date_init, date_end, csv_fold
     for device in account['devices']:
 
         url = device_endpoint(account['uid'], device, date_init, date_end)
-        # print_log(f"URL: {url}")
 
         response = requests.get(url)
         if response.status_code != 200:
@@ -32,18 +31,65 @@ def main(account, timescale_connector, table_name, date_init, date_end, csv_fold
             
         res_json = response.json()
         data_history = res_json['features']
-        
-        csv_data = create_csv_list(data_history)
 
+        dev_data = [
+            [
+                "id_api", 
+                "created_at",
+                
+                "pos_x",
+                "pos_y",
+                "pos_z",
+                
+                "std_x",
+                "std_y",
+                "std_z",
+                
+                "max_x",
+                "max_y",
+                "max_z",
+                
+                "temperature",
+                "coordinates"
+            ]
+        ]
+        
+        for entry in data_history:
+            
+            dev_data.append([
+                entry['properties']['id_collar'],
+                entry['properties']['time_stamp'],
+                
+                entry['properties']['pos_x'],
+                entry['properties']['pos_y'],
+                entry['properties']['pos_z'],
+                
+                entry['properties']['std_x'],
+                entry['properties']['std_y'],
+                entry['properties']['std_z'],
+                
+                entry['properties']['max_x'],
+                entry['properties']['max_y'],
+                entry['properties']['max_z'],
+                
+                entry['properties']['temperature'],
+                
+                f"({entry['geometry']['coordinates'][0]}, {entry['geometry']['coordinates'][1]})"
+            ])
+                        
         file_path = f"{csv_folder}/{device}.csv"
         
-        # print_log(f"Trying to save on {file_path}")
-
         with open(file_path, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerows(csv_data)
-
-        has_new_data = copy_data_to_db(table_name, timescale_connector, csv_data[1:])
+            writer.writerows(dev_data)
+        
+        has_new_data = copy_data_to_db(
+            table_name="DEVICE_DATA_API",
+            columns="id_api, created_at, pos_x, pos_y, pos_z, std_x, std_y, std_z, max_x, max_y, max_z, temperature, coordinates",
+            conflict="id_api, created_at",
+            conn=timescale_connector, 
+            data=dev_data[1:]
+        )
 
         if has_new_data:
             has_new_data_total += 1
@@ -76,7 +122,6 @@ if __name__ == "__main__":
     DB_NAME = os.getenv("POSTGRES_DB")
     DB_USER = os.getenv("POSTGRES_USER")
     DB_PASS = os.getenv("POSTGRES_PASS")
-    DB_TABLE_NAME = os.getenv("POSTGRES_TABLE_NAME")
 
     DB_PARAMS = {
         'host': DB_HOST,
@@ -104,7 +149,6 @@ if __name__ == "__main__":
     main(
         account=account,
         timescale_connector=conn,
-        table_name=DB_TABLE_NAME,
         date_init=dateYesterday,
         date_end=dateNow,
         csv_folder=TEMP_FOLDER

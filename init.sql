@@ -29,9 +29,9 @@ CREATE TABLE DEVICES_API (
 );
 
 CREATE TABLE DEVICE_DATA_API (
-    id serial PRIMARY KEY,
-    id_api char(5) UNIQUE NOT NULL,
-    created_at timestamp NOT NULL,
+    id serial,
+    id_api char(5),
+    created_at timestamp,
     pos_x real,
     pos_y real,
     pos_z real,
@@ -47,8 +47,8 @@ CREATE TABLE DEVICE_DATA_API (
 );
 
 CREATE TABLE DEVICE_DATA_SEVEN_API (
-  id 					serial PRIMARY KEY,
-  id_api 				char(5) UNIQUE NOT NULL,
+  id 					serial,
+  id_api 				char(5),
   created_at 			timestamp,
   coordinates 			point,
   raw_acc_x 			real,
@@ -73,7 +73,9 @@ CREATE TABLE DEVICE_DATA_SEVEN_API (
   FOREIGN KEY (id_api) REFERENCES DEVICES_API(id_api)
 );
 
--- ALTER TABLE device_data ADD PRIMARY KEY (id_collar, created_at);
+ALTER TABLE DEVICE_DATA_API ADD PRIMARY KEY (id_api, created_at);
+ALTER TABLE DEVICE_DATA_SEVEN_API ADD PRIMARY KEY (id_api, created_at);
+
 -- CREATE INDEX index_device_data_collar ON DEVICE_DATA(id_collar);
 
 -- SELECT create_hypertable('device_data', 'created_at');
