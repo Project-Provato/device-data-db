@@ -16,6 +16,25 @@ services:
     ports:
       - 5432:5432
 
+
+  grafana:
+    container_name: grafana
+    build:
+      context: ./grafana
+      args:
+        - GRAFANA_URL=https://${SERVER_HOST}
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS}
+    ports:
+      - 3000:3000
+    depends_on:
+      - timescale
+    # volumes:
+      # - grafana-vol:/var/lib/grafana
+
   adminer:
     container_name: adminer
     image: adminer:5.3.0
