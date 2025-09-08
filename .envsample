@@ -9,5 +9,10 @@ POSTGRES_DB= # Database name
 POSTGRES_USER= # Database user credentials
 POSTGRES_PASS= # Database user credentials
 
+# Grafana
+SERVER_HOST= # Hostname for Grafana Instance
+GRAFANA_USER= # Grafana Admin Username
+GRAFANA_PASS= # Grafana Admin Password
+
 # Other
 LAST_YEAR_FLAG= # TRUE for whole year, else its only previous day
