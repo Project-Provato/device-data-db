@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 9,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -60,9 +60,20 @@
             },
             "filterable": true,
             "inspect": false,
-            "width": 125
+            "width": 150
           },
-          "mappings": [],
+          "mappings": [
+            {
+              "options": {
+                "SHEEP": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "d"
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -77,30 +88,11 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "animal_type"
+              "options": "Animal"
             },
             "properties": [
               {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "CATTLE": {
-                        "index": 2,
-                        "text": "🐄"
-                      },
-                      "GOAT": {
-                        "index": 0,
-                        "text": "🐐"
-                      },
-                      "SHEEP": {
-                        "index": 1,
-                        "text": "🐑"
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
+                "id": "custom.width"
               }
             ]
           }
@@ -144,37 +136,8 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "SELECT DISTINCT ON (de.id_collar)\r\n  ei.farm_area, ei.farm_nomos,\r\n  de.id_collar, d.animal_type, de.created_at\r\nFROM device_data de\r\nJOIN devices d ON de.id_collar = d.id\r\nLEFT JOIN users ei ON d.id_user = ei.id\r\nWHERE $__timeFilter(created_at)\r\nORDER BY de.id_collar, de.created_at DESC;\r\n",
+          "rawSql": "SELECT DISTINCT ON (id_api)\r\n  f.name as farm,\r\n  d.name, (d.type) as type, d.breed,\r\n  de.id_api, de.created_at\r\nFROM animals_api AS d\r\nJOIN device_data_api AS de ON de.id_api = d.id_api\r\nLEFT JOIN farms_api as f ON d.farm_id_api = f.id_api\r\nWHERE $__timeFilter(de.created_at)\r\nORDER BY de.id_api, de.created_at DESC;",
           "refId": "SimpleCall",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        },
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "feqt5ak97vgg0f"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "hide": false,
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n  id_collar,\r\n  MIN(min_temperature) AS min_temperature,\r\n  AVG(avg_temperature) AS avg_temperature,\r\n  MAX(max_temperature) AS max_temperature,\r\n  COUNT(*)\r\nFROM device_data_daily_agg\r\nWHERE $__timeFilter(day)\r\nGROUP BY id_collar;\r\n",
-          "refId": "FunctionCall",
           "sql": {
             "columns": [
               {
@@ -194,15 +157,8 @@
           }
         }
       ],
-      "title": "Greece Devices Overview",
+      "title": "PROVATO Project Overview",
       "transformations": [
-        {
-          "id": "joinByField",
-          "options": {
-            "byField": "id_collar",
-            "mode": "inner"
-          }
-        },
         {
           "id": "formatTime",
           "options": {
@@ -221,30 +177,32 @@
             },
             "includeByName": {},
             "indexByName": {
-              "animal_type": 3,
-              "avg_temperature": 7,
-              "count": 5,
-              "created_at": 4,
-              "farm_area": 1,
-              "farm_nomos": 0,
-              "id_collar": 2,
-              "max_temperature": 8,
-              "min_temperature": 6
+              "breed": 2,
+              "created_at": 5,
+              "farm": 0,
+              "id_api": 4,
+              "name": 3,
+              "type": 1
             },
             "renameByName": {
               "animal_type": "Animal",
               "animal_type Animal Icon": "Animal",
               "avg_temperature": "Temp Mean",
+              "breed": "Breed",
               "collar": "Device",
               "count": "Active Days",
-              "created_at": "Last Data",
+              "created_at": "Last Data Day",
+              "farm": "Farm",
               "farm_area": "Area",
               "farm_nomos": "Nomos",
+              "id_api": "Device",
               "id_collar": "Device",
               "indicator Activity": "Activity",
               "max_temperature": "Temp Max",
               "min_temperature": "Temp Min",
-              "percent Activity": ""
+              "name": "Animal",
+              "percent Activity": "",
+              "type": "Type"
             }
           }
         }
@@ -279,24 +237,7 @@
             ]
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "created_at"
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 17,
@@ -444,7 +385,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT DISTINCT ON (de.id_collar)\r\n  de.id_collar, de.created_at, de.longitude, de.latitude,\r\n  d.animal_type,\r\n  ei.farm_area, ei.farm_nomos\r\nFROM device_data de\r\nJOIN devices d ON de.id_collar = d.id\r\nLEFT JOIN users ei ON d.id_user = ei.id\r\nWHERE de.created_at > ($__timeTo()::timestamp - INTERVAL '7 days')\r\n AND $__timeFilter(de.created_at)\r\nORDER BY de.id_collar, de.created_at DESC;\r\n",
+          "rawSql": "SELECT DISTINCT ON (id_api)\r\n  d.name, d.type, d.breed,\r\n  de.id_api, de.created_at, de.coordinates[0] AS longitude, de.coordinates[1] AS latitude\r\nFROM animals_api AS d\r\nJOIN device_data_api AS de ON de.id_api = d.id_api\r\nWHERE de.created_at > ($__timeTo()::timestamp - INTERVAL '7 days')\r\n AND $__timeFilter(de.created_at)\r\nORDER BY de.id_api, de.created_at DESC;\r\n",
           "refId": "Active",
           "sql": {
             "columns": [
@@ -471,9 +412,9 @@
           },
           "editorMode": "code",
           "format": "table",
-          "hide": false,
+          "hide": true,
           "rawQuery": true,
-          "rawSql": "SELECT DISTINCT ON (de.id_collar)\r\n  de.id_collar, de.created_at, de.longitude, de.latitude,\r\n  d.animal_type,\r\n  ei.farm_area, ei.farm_nomos\r\nFROM device_data de\r\nJOIN devices d ON de.id_collar = d.id\r\nLEFT JOIN users ei ON d.id_user = ei.id\r\nWHERE de.created_at <= ($__timeTo()::timestamp - INTERVAL '7 days')\r\n  AND $__timeFilter(de.created_at) \r\nORDER BY de.id_collar, de.created_at DESC;\r\n",
+          "rawSql": "SELECT DISTINCT ON (id_api)\r\n  d.name, d.type, d.breed,\r\n  de.id_api, de.created_at, de.coordinates[0] AS longitude, de.coordinates[1] AS latitude\r\nFROM animals_api AS d\r\nJOIN device_data_api AS de ON de.id_api = d.id_api\r\nWHERE de.created_at <= ($__timeTo()::timestamp - INTERVAL '7 days')\r\n AND $__timeFilter(de.created_at)\r\nORDER BY de.id_api, de.created_at DESC;",
           "refId": "Inactive",
           "sql": {
             "columns": [
@@ -498,283 +439,12 @@
       "type": "geomap"
     },
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "feqt5ak97vgg0f"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 0,
-        "y": 18
-      },
-      "id": 35,
-      "options": {
-        "barRadius": 0,
-        "barWidth": 0.7,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": false
-        },
-        "orientation": "auto",
-        "showValue": "never",
-        "stacking": "normal",
-        "tooltip": {
-          "maxHeight": 400,
-          "mode": "single",
-          "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 100
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "feqt5ak97vgg0f"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT id_collar, day, 1 as sent, messages as msg\r\nFROM device_data_daily_agg \r\nWHERE $__timeFilter(day) \r\n-- LIMIT ${DataLimit}\r\n;",
-          "refId": "Data",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Daily Active Device Count",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "LAT": true,
-              "LNG": true,
-              "RAW_ACC_Y": true,
-              "RAW_ACC_Z": true,
-              "RAW_TEMPERATURE": true,
-              "messages": true,
-              "msg": true,
-              "pos_x": true,
-              "pos_y": true,
-              "pos_z": true,
-              "temperature": false
-            },
-            "includeByName": {},
-            "indexByName": {},
-            "renameByName": {
-              "temperature": ""
-            }
-          }
-        },
-        {
-          "id": "partitionByValues",
-          "options": {
-            "fields": [
-              "id_collar"
-            ],
-            "keepFields": false,
-            "naming": {
-              "asLabels": false
-            }
-          }
-        }
-      ],
-      "type": "barchart"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 12,
-        "y": 18
-      },
-      "id": 36,
-      "options": {
-        "barRadius": 0,
-        "barWidth": 0.7,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "orientation": "auto",
-        "showValue": "never",
-        "stacking": "normal",
-        "tooltip": {
-          "maxHeight": 400,
-          "mode": "multi",
-          "sort": "desc"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 100
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 35,
-          "refId": "A"
-        }
-      ],
-      "title": "Daily Messages by Active Device",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "LAT": true,
-              "LNG": true,
-              "RAW_ACC_Y": true,
-              "RAW_ACC_Z": true,
-              "RAW_TEMPERATURE": true,
-              "messages": false,
-              "pos_x": true,
-              "pos_y": true,
-              "pos_z": true,
-              "sent": true,
-              "temperature": false
-            },
-            "includeByName": {},
-            "indexByName": {},
-            "renameByName": {
-              "messages": "",
-              "temperature": ""
-            }
-          }
-        },
-        {
-          "id": "partitionByValues",
-          "options": {
-            "fields": [
-              "id_collar"
-            ],
-            "keepFields": false,
-            "naming": {
-              "asLabels": false
-            }
-          }
-        }
-      ],
-      "type": "barchart"
-    },
-    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 18
       },
       "id": 20,
       "panels": [],
@@ -789,7 +459,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
@@ -799,7 +470,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
-            "drawStyle": "line",
+            "drawStyle": "bars",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
@@ -827,6 +498,7 @@
               "mode": "off"
             }
           },
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -843,158 +515,8 @@
       "gridPos": {
         "h": 8,
         "w": 11,
-        "x": 0,
-        "y": 27
-      },
-      "id": 26,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "feqt5ak97vgg0f"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT id_collar, created_at, temperature as temp, pos_x, pos_y, pos_z \r\nFROM device_data \r\nWHERE created_at \r\n  -- BETWEEN GREATEST(($__timeFrom()::timestamp), ($__timeTo()::timestamp - INTERVAL '30 days'))\r\n  BETWEEN ($__timeTo()::timestamp - INTERVAL '30 days')\r\n  AND ($__timeTo()::timestamp)\r\n-- LIMIT ${DataLimit}\r\n;",
-          "refId": "Data",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "timeFrom": "now-30d",
-      "title": "Recent Temperature",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "LAT": true,
-              "LNG": true,
-              "RAW_ACC_Y": true,
-              "RAW_ACC_Z": true,
-              "RAW_TEMPERATURE": true,
-              "pos_x": true,
-              "pos_y": true,
-              "pos_z": true,
-              "temperature": false
-            },
-            "includeByName": {},
-            "indexByName": {},
-            "renameByName": {
-              "temperature": ""
-            }
-          }
-        },
-        {
-          "id": "partitionByValues",
-          "options": {
-            "fields": [
-              "id_collar"
-            ],
-            "keepFields": false,
-            "naming": {
-              "asLabels": false
-            }
-          }
-        }
-      ],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "feqt5ak97vgg0f"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 12,
-        "y": 27
+        "x": 6,
+        "y": 19
       },
       "id": 30,
       "options": {
@@ -1007,7 +529,7 @@
           "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "none",
           "sort": "none"
         }
       },
@@ -1021,7 +543,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_collar, day, avg_temperature as temp, avg_pos_x as pos_x, avg_pos_y as pos_y, avg_pos_z as pos_z\r\nFROM device_data_daily_agg \r\nWHERE $__timeFilter(day) \r\n-- LIMIT ${DataLimit}\r\n;",
+          "rawSql": "SELECT id_api, created_at, temperature as temp\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -1042,7 +564,7 @@
           }
         }
       ],
-      "title": "Daily Temperature",
+      "title": "Animal Temperature",
       "transformations": [
         {
           "id": "organize",
@@ -1069,7 +591,7 @@
           "id": "partitionByValues",
           "options": {
             "fields": [
-              "id_collar"
+              "id_api"
             ],
             "keepFields": false,
             "naming": {
@@ -1082,13 +604,14 @@
     },
     {
       "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
+        "type": "grafana-postgresql-datasource",
+        "uid": "feqt5ak97vgg0f"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "continuous-BlPu",
+            "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
@@ -1096,9 +619,11 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 2,
+            "axisSoftMin": -2,
             "barAlignment": 0,
             "barWidthFactor": 0.6,
-            "drawStyle": "line",
+            "drawStyle": "bars",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
@@ -1126,6 +651,312 @@
               "mode": "off"
             }
           },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 11,
+        "x": 0,
+        "y": 27
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "feqt5ak97vgg0f"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT id_api, created_at, -2 + ((pos_x+32768)/ 65535.0) * 4  as acc_x\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "refId": "Data",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Animal Mean Accelerometer X",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "LAT": true,
+              "LNG": true,
+              "RAW_ACC_Y": true,
+              "RAW_ACC_Z": true,
+              "RAW_TEMPERATURE": true,
+              "pos_x": true,
+              "pos_y": true,
+              "pos_z": true,
+              "temperature": false
+            },
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "temperature": ""
+            }
+          }
+        },
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": [
+              "id_api"
+            ],
+            "keepFields": false,
+            "naming": {
+              "asLabels": false
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "feqt5ak97vgg0f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "max": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 11,
+        "x": 12,
+        "y": 27
+      },
+      "id": 37,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "feqt5ak97vgg0f"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT id_api, created_at, -2 + ((max_x+32768)/ 65535.0) * 4  as acc_x\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "refId": "Data",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Animal Max Accelerometer X",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "LAT": true,
+              "LNG": true,
+              "RAW_ACC_Y": true,
+              "RAW_ACC_Z": true,
+              "RAW_TEMPERATURE": true,
+              "pos_x": true,
+              "pos_y": true,
+              "pos_z": true,
+              "temperature": false
+            },
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "temperature": ""
+            }
+          }
+        },
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": [
+              "id_api"
+            ],
+            "keepFields": false,
+            "naming": {
+              "asLabels": false
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "feqt5ak97vgg0f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 2,
+            "axisSoftMin": -2,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1145,7 +976,7 @@
         "x": 0,
         "y": 35
       },
-      "id": 29,
+      "id": 40,
       "options": {
         "legend": {
           "calcs": [],
@@ -1156,7 +987,7 @@
           "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -1164,15 +995,34 @@
       "targets": [
         {
           "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
+            "type": "grafana-postgresql-datasource",
+            "uid": "feqt5ak97vgg0f"
           },
-          "panelId": 26,
-          "refId": "A"
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT id_api, created_at, -2 + ((pos_y+32768)/ 65535.0) * 4  as acc_y\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "refId": "Data",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
-      "timeFrom": "now-30d",
-      "title": "Recent Accelerometer X",
+      "title": "Animal Mean Accelerometer Y",
       "transformations": [
         {
           "id": "organize",
@@ -1183,22 +1033,23 @@
               "RAW_ACC_Y": true,
               "RAW_ACC_Z": true,
               "RAW_TEMPERATURE": true,
-              "pos_x": false,
+              "pos_x": true,
               "pos_y": true,
               "pos_z": true,
-              "temp": true,
-              "temperature": true
+              "temperature": false
             },
             "includeByName": {},
             "indexByName": {},
-            "renameByName": {}
+            "renameByName": {
+              "temperature": ""
+            }
           }
         },
         {
           "id": "partitionByValues",
           "options": {
             "fields": [
-              "id_collar"
+              "id_api"
             ],
             "keepFields": false,
             "naming": {
@@ -1217,7 +1068,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "continuous-BlPu",
+            "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
@@ -1225,9 +1077,10 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 2,
             "barAlignment": 0,
             "barWidthFactor": 0.6,
-            "drawStyle": "line",
+            "drawStyle": "bars",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
@@ -1255,6 +1108,7 @@
               "mode": "off"
             }
           },
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1274,7 +1128,7 @@
         "x": 12,
         "y": 35
       },
-      "id": 31,
+      "id": 38,
       "options": {
         "legend": {
           "calcs": [],
@@ -1285,7 +1139,7 @@
           "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -1299,7 +1153,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_collar, day, avg_temperature as temp, avg_pos_x as pos_x, avg_pos_y as pos_y, avg_pos_z as pos_z\r\nFROM device_data_daily_agg \r\nWHERE $__timeFilter(day) \r\n-- LIMIT ${DataLimit}\r\n;",
+          "rawSql": "SELECT id_api, created_at, -2 + ((max_y+32768)/ 65535.0) * 4  as acc_y\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -1320,7 +1174,7 @@
           }
         }
       ],
-      "title": "Daily Accelerometer X",
+      "title": "Animal Max Accelerometer Y",
       "transformations": [
         {
           "id": "organize",
@@ -1331,10 +1185,9 @@
               "RAW_ACC_Y": true,
               "RAW_ACC_Z": true,
               "RAW_TEMPERATURE": true,
-              "pos_x": false,
+              "pos_x": true,
               "pos_y": true,
               "pos_z": true,
-              "temp": true,
               "temperature": false
             },
             "includeByName": {},
@@ -1348,136 +1201,7 @@
           "id": "partitionByValues",
           "options": {
             "fields": [
-              "id_collar"
-            ],
-            "keepFields": false,
-            "naming": {
-              "asLabels": false
-            }
-          }
-        }
-      ],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 0,
-        "y": 43
-      },
-      "id": 27,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 26,
-          "refId": "A"
-        }
-      ],
-      "timeFrom": "now-30d",
-      "title": "Recent Accelerometer Y",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "LAT": true,
-              "LNG": true,
-              "RAW_ACC_Y": true,
-              "RAW_ACC_Z": true,
-              "RAW_TEMPERATURE": true,
-              "pos_x": true,
-              "pos_y": false,
-              "pos_z": true,
-              "temp": true,
-              "temperature": true
-            },
-            "includeByName": {},
-            "indexByName": {},
-            "renameByName": {}
-          }
-        },
-        {
-          "id": "partitionByValues",
-          "options": {
-            "fields": [
-              "id_collar"
+              "id_api"
             ],
             "keepFields": false,
             "naming": {
@@ -1496,7 +1220,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "continuous-BlPu",
+            "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
@@ -1504,9 +1229,11 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 2,
+            "axisSoftMin": -2,
             "barAlignment": 0,
             "barWidthFactor": 0.6,
-            "drawStyle": "line",
+            "drawStyle": "bars",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
@@ -1534,13 +1261,13 @@
               "mode": "off"
             }
           },
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -1550,10 +1277,10 @@
       "gridPos": {
         "h": 8,
         "w": 11,
-        "x": 12,
+        "x": 0,
         "y": 43
       },
-      "id": 32,
+      "id": 41,
       "options": {
         "legend": {
           "calcs": [],
@@ -1564,7 +1291,7 @@
           "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -1578,7 +1305,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_collar, day, avg_temperature as temp, avg_pos_x as pos_x, avg_pos_y as pos_y, avg_pos_z as pos_z\r\nFROM device_data_daily_agg \r\nWHERE $__timeFilter(day) \r\n-- LIMIT ${DataLimit}\r\n;",
+          "rawSql": "SELECT id_api, created_at, -2 + ((pos_z+32768)/ 65535.0) * 4  as acc_z\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -1599,7 +1326,7 @@
           }
         }
       ],
-      "title": "Daily Accelerometer Y",
+      "title": "Animal Mean Accelerometer Z",
       "transformations": [
         {
           "id": "organize",
@@ -1611,9 +1338,8 @@
               "RAW_ACC_Z": true,
               "RAW_TEMPERATURE": true,
               "pos_x": true,
-              "pos_y": false,
+              "pos_y": true,
               "pos_z": true,
-              "temp": true,
               "temperature": false
             },
             "includeByName": {},
@@ -1627,136 +1353,7 @@
           "id": "partitionByValues",
           "options": {
             "fields": [
-              "id_collar"
-            ],
-            "keepFields": false,
-            "naming": {
-              "asLabels": false
-            }
-          }
-        }
-      ],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 0,
-        "y": 51
-      },
-      "id": 28,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 26,
-          "refId": "A"
-        }
-      ],
-      "timeFrom": "now-30d",
-      "title": "Recent Accelerometer Z",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "LAT": true,
-              "LNG": true,
-              "RAW_ACC_Y": true,
-              "RAW_ACC_Z": true,
-              "RAW_TEMPERATURE": true,
-              "pos_x": true,
-              "pos_y": true,
-              "pos_z": false,
-              "temp": true,
-              "temperature": true
-            },
-            "includeByName": {},
-            "indexByName": {},
-            "renameByName": {}
-          }
-        },
-        {
-          "id": "partitionByValues",
-          "options": {
-            "fields": [
-              "id_collar"
+              "id_api"
             ],
             "keepFields": false,
             "naming": {
@@ -1775,17 +1372,18 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "continuous-BlPu",
+            "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
-            "axisCenteredZero": true,
+            "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
-            "drawStyle": "line",
+            "drawStyle": "bars",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
@@ -1813,13 +1411,14 @@
               "mode": "off"
             }
           },
+          "fieldMinMax": false,
           "mappings": [],
+          "max": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -1830,9 +1429,9 @@
         "h": 8,
         "w": 11,
         "x": 12,
-        "y": 51
+        "y": 43
       },
-      "id": 33,
+      "id": 42,
       "options": {
         "legend": {
           "calcs": [],
@@ -1843,7 +1442,7 @@
           "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -1857,7 +1456,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_collar, day, avg_temperature as temp, avg_pos_x as pos_x, avg_pos_y as pos_y, avg_pos_z as pos_z\r\nFROM device_data_daily_agg \r\nWHERE $__timeFilter(day) \r\n-- LIMIT ${DataLimit}\r\n;",
+          "rawSql": "SELECT id_api, created_at, -2 + ((max_z+32768)/ 65535.0) * 4  as acc_z\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -1878,7 +1477,7 @@
           }
         }
       ],
-      "title": "Daily Accelerometer Z",
+      "title": "Animal Max Accelerometer Z",
       "transformations": [
         {
           "id": "organize",
@@ -1891,8 +1490,7 @@
               "RAW_TEMPERATURE": true,
               "pos_x": true,
               "pos_y": true,
-              "pos_z": false,
-              "temp": true,
+              "pos_z": true,
               "temperature": false
             },
             "includeByName": {},
@@ -1906,7 +1504,7 @@
           "id": "partitionByValues",
           "options": {
             "fields": [
-              "id_collar"
+              "id_api"
             ],
             "keepFields": false,
             "naming": {
@@ -1927,13 +1525,13 @@
     "list": []
   },
   "time": {
-    "from": "now-2y",
+    "from": "now-90d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Generic Preview",
   "uid": "eerhsth6kzu9sa",
-  "version": 89,
+  "version": 50,
   "weekStart": ""
 }

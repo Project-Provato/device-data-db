@@ -29,9 +29,9 @@ CREATE TABLE DEVICES_API (
 );
 
 CREATE TABLE DEVICE_DATA_API (
-    id serial,
-    id_api char(5),
-    created_at timestamp,
+    id serial PRIMARY KEY,
+    id_api char(5) NOT NULL,
+    created_at timestamp NOT NULL,
     pos_x real,
     pos_y real,
     pos_z real,
@@ -43,38 +43,37 @@ CREATE TABLE DEVICE_DATA_API (
     max_z real,
     temperature real,
     coordinates point,
+    UNIQUE(id_api, created_at),
     FOREIGN KEY (id_api) REFERENCES DEVICES_API(id_api)
 );
 
 CREATE TABLE DEVICE_DATA_SEVEN_API (
-  id 					serial,
-  id_api 				char(5),
-  created_at 			timestamp,
-  coordinates 			point,
-  raw_acc_x 			real,
-  raw_acc_y 			real,
-  raw_acc_z 			real,
-  temperature 			real,
-  flag_alarm 			smallint,
-  flag_temperature 		smallint,
-  flag_distance 		smallint,
-  flag_activity 		smallint,
-  flag_position 		smallint,
-  flag_outside_farm 	smallint,
-  temperature_current 	real,
-  temperature_weekly 	real,
-  temperature_herd 		real,
-  activity_current 		real,
-  activity_weekly 		real,
-  activity_herd 		real,
-  distance_current 		real,
-  distance_weekly 		real,
-  distance_herd 		real,
-  FOREIGN KEY (id_api) REFERENCES DEVICES_API(id_api)
+    id 					serial PRIMARY KEY,
+    id_api 				char(5) NOT NULL,
+    created_at 			timestamp NOT NULL,
+    coordinates 			point,
+    raw_acc_x 			real,
+    raw_acc_y 			real,
+    raw_acc_z 			real,
+    temperature 			real,
+    flag_alarm 			smallint,
+    flag_temperature 		smallint,
+    flag_distance 		smallint,
+    flag_activity 		smallint,
+    flag_position 		smallint,
+    flag_outside_farm 	smallint,
+    temperature_current 	real,
+    temperature_weekly 	real,
+    temperature_herd 		real,
+    activity_current 		real,
+    activity_weekly 		real,
+    activity_herd 		real,
+    distance_current 		real,
+    distance_weekly 		real,
+    distance_herd 		real,
+    UNIQUE (id_api, created_at),
+    FOREIGN KEY (id_api) REFERENCES DEVICES_API(id_api)
 );
-
-ALTER TABLE DEVICE_DATA_API ADD PRIMARY KEY (id_api, created_at);
-ALTER TABLE DEVICE_DATA_SEVEN_API ADD PRIMARY KEY (id_api, created_at);
 
 -- CREATE INDEX index_device_data_collar ON DEVICE_DATA(id_collar);
 

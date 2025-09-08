@@ -12,7 +12,7 @@ datasources:
     orgId: 1
     name: PROVATO
     type: grafana-postgresql-datasource
-    url: https://timescale.io
+    url: 'POSTGRES_HOST:POSTGRES_PORT'
     user: POSTGRES_USER
     isDefault: true
     secureJsonData:
