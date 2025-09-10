@@ -1,4 +1,3 @@
-import requests
 import csv
 import os
 from dotenv import load_dotenv
@@ -7,7 +6,7 @@ from helper import print_log, request_json_auth
 from timescale import connect_with_retry, copy_data_to_db
 
 
-def get_farms(account, timescale_connector):
+def get_farms(account):
 
     farms = [[
         "id_api",
@@ -84,7 +83,7 @@ def get_animals(account, farm_dev_map):
     animals = [[
             "id_api",
             "name",
-            "date_birth",
+            "birth",
             "type",
             "sex",
             "breed",
@@ -95,15 +94,21 @@ def get_animals(account, farm_dev_map):
     
     for device in devices:
         
-        dev_farm = {'api': 1, 'db': 1}
+        # dev_farm = {'api': 1, 'db': 1}
+        print(farm_dev_map)
         
         if device in farm_dev_map.keys():
             dev_farm = farm_dev_map[device]
+        else:
+            print_log(f"Skipping no farm device {device}")
+            continue
         
         res_json = request_json_auth(f"https://digitanimal.io/api/v4/evo/linkage/collar/{device}/animal", account['token'])
         
         if "type" in res_json.keys():
-            animal = [device, "Unlinked Device", None, None, None, None, None, dev_farm['api'], dev_farm['db']]
+            print_log(f"Skipping unlinked device {device}")
+            continue
+            # animal = [device, "Unlinked Device", None, None, None, None, None, dev_farm['api'], dev_farm['db']]
         
         else:        
             animal = [
@@ -135,7 +140,7 @@ def save_animals(animals, csv_folder, timescale_connector):
     
     has_new_data = copy_data_to_db(
         table_name='ANIMALS_API',
-        columns="id_api, name, date_birth, type, sex, breed, breed_short, farm_id_api, farm_id", 
+        columns="id_api, name, birth, type, sex, breed, breed_short, farm_id_api, farm_id", 
         conflict="id_api",
         conn=timescale_connector,
         data=animals[1:]
@@ -150,14 +155,14 @@ def save_animals(animals, csv_folder, timescale_connector):
 def get_devices(account):
 
     devices = [[
-        'id_api', 'type'
+        'id_api', 'type', 'id_animal'
     ]]
 
     for device in account['devices']:
         
         res_json = request_json_auth(f"https://digitanimal.io/api/v4/devices/collar/{device}/info", account['token'])
 
-        devices.append([device, res_json['technology']])
+        devices.append([device, res_json['technology'], device])
 
     return devices
 
@@ -174,7 +179,7 @@ def save_devices(devices, csv_folder, timescale_connector):
     
     has_new_data = copy_data_to_db(
         table_name='DEVICES_API',
-        columns="id_api, type",
+        columns="id_api, type, id_animal",
         conflict="id_api",
         conn=timescale_connector,
         data=devices[1:]
@@ -191,7 +196,7 @@ def main(account, timescale_connector, csv_folder):
     account = add_info_to_account(account)
     
     # Farms
-    farms = get_farms(account, timescale_connector)
+    farms = get_farms(account)
     save_farms(farms, csv_folder, timescale_connector)
 
     farm_dev_map = get_farm_dev_map(farms, account, timescale_connector)

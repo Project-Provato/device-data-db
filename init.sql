@@ -11,7 +11,7 @@ CREATE TABLE ANIMALS_API (
     id serial PRIMARY KEY,
     id_api char(5) UNIQUE NOT NULL,
     name char(100),
-    date_birth date,
+    birth date,
     type char(100),
     sex char(100),
     breed char(100),
@@ -25,13 +25,14 @@ CREATE TABLE DEVICES_API (
     id serial PRIMARY KEY,
     id_api char(5) UNIQUE NOT NULL,
     type char(100),
-    FOREIGN KEY (id_api) REFERENCES ANIMALS_API(id_api)
+    id_animal char(5)
+    FOREIGN KEY (id_animal) REFERENCES ANIMALS_API(id_api)
 );
 
 CREATE TABLE DEVICE_DATA_API (
     id serial PRIMARY KEY,
     id_api char(5) NOT NULL,
-    created_at timestamp NOT NULL,
+    created timestamp NOT NULL,
     pos_x real,
     pos_y real,
     pos_z real,
@@ -50,7 +51,7 @@ CREATE TABLE DEVICE_DATA_API (
 CREATE TABLE DEVICE_DATA_SEVEN_API (
     id 					serial PRIMARY KEY,
     id_api 				char(5) NOT NULL,
-    created_at 			timestamp NOT NULL,
+    created 			timestamp NOT NULL,
     coordinates 			point,
     raw_acc_x 			real,
     raw_acc_y 			real,
