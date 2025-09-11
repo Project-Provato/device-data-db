@@ -25,7 +25,7 @@ CREATE TABLE DEVICES_API (
     id serial PRIMARY KEY,
     id_api char(5) UNIQUE NOT NULL,
     type char(100),
-    id_animal char(5)
+    id_animal char(5),
     FOREIGN KEY (id_animal) REFERENCES ANIMALS_API(id_api)
 );
 
@@ -44,7 +44,7 @@ CREATE TABLE DEVICE_DATA_API (
     max_z real,
     temperature real,
     coordinates point,
-    UNIQUE(id_api, created_at),
+    UNIQUE(id_api, created),
     FOREIGN KEY (id_api) REFERENCES DEVICES_API(id_api)
 );
 
@@ -72,10 +72,6 @@ CREATE TABLE DEVICE_DATA_SEVEN_API (
     distance_current 		real,
     distance_weekly 		real,
     distance_herd 		real,
-    UNIQUE (id_api, created_at),
+    UNIQUE (id_api, created),
     FOREIGN KEY (id_api) REFERENCES DEVICES_API(id_api)
 );
-
--- CREATE INDEX index_device_data_collar ON DEVICE_DATA(id_collar);
-
--- SELECT create_hypertable('device_data', 'created_at');

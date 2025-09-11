@@ -14,6 +14,8 @@ def get_farms(account):
         "coordinates"
     ]]
 
+    farms.append([0, "No Farm", None])
+
     res_json = request_json_auth("https://digitanimal.io/api/v4/location/farm/user", account['token'])
 
     for farm in res_json['farmsPHP']:
@@ -63,6 +65,9 @@ def get_farm_dev_map(farms, account, timescale_connector):
         # add mappings
         res_json = request_json_auth(f"https://digitanimal.io/api/v4/location/farm/{farm[0]}", account['token'])
         
+        # print(farm[0])
+        # print(res_json['location']['entities'])
+
         for entry in res_json['location']['entities']:
 
             with timescale_connector.cursor() as cur:
@@ -75,6 +80,7 @@ def get_farm_dev_map(farms, account, timescale_connector):
             }
         
     return farm_dev_map
+
 
 def get_animals(account, farm_dev_map):
 
@@ -94,14 +100,11 @@ def get_animals(account, farm_dev_map):
     
     for device in devices:
         
-        # dev_farm = {'api': 1, 'db': 1}
-        print(farm_dev_map)
+        # No farm entry in farms
+        dev_farm = {'api': 0, 'db': 1}
         
         if device in farm_dev_map.keys():
             dev_farm = farm_dev_map[device]
-        else:
-            print_log(f"Skipping no farm device {device}")
-            continue
         
         res_json = request_json_auth(f"https://digitanimal.io/api/v4/evo/linkage/collar/{device}/animal", account['token'])
         
@@ -152,13 +155,15 @@ def save_animals(animals, csv_folder, timescale_connector):
         print_log(f"Animals updated - new data ✖")
 
 
-def get_devices(account):
+def get_devices(animals, account):
 
     devices = [[
         'id_api', 'type', 'id_animal'
     ]]
 
-    for device in account['devices']:
+    for animal in animals[1:]:
+
+        device = animal[0]
         
         res_json = request_json_auth(f"https://digitanimal.io/api/v4/devices/collar/{device}/info", account['token'])
 
@@ -206,7 +211,7 @@ def main(account, timescale_connector, csv_folder):
     save_animals(animals, csv_folder, timescale_connector)
     
     # Devices
-    devices = get_devices(account)
+    devices = get_devices(animals, account)
     save_devices(devices, csv_folder, timescale_connector)
 
 

@@ -21,6 +21,13 @@ def main(account, timescale_connector, date_init, date_end, csv_folder):
     
     for device in account['devices']:
 
+        with timescale_connector.cursor() as cur:
+                cur.execute(f"SELECT id FROM DEVICES_API where id_api='{device}';")
+                id = cur.fetchone()
+        
+        if not id:
+            continue
+
         url = device_endpoint(account['uid'], device, date_init, date_end)
 
         response = requests.get(url)
@@ -86,7 +93,7 @@ def main(account, timescale_connector, date_init, date_end, csv_folder):
         has_new_data = copy_data_to_db(
             table_name="DEVICE_DATA_API",
             columns="id_api, created, pos_x, pos_y, pos_z, std_x, std_y, std_z, max_x, max_y, max_z, temperature, coordinates",
-            conflict="id_api, created_at",
+            conflict="id_api, created",
             conn=timescale_connector, 
             data=dev_data[1:]
         )

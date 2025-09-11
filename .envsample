@@ -16,8 +16,3 @@ GRAFANA_PASS= # Grafana Admin Password
 
 # Other
 LAST_YEAR_FLAG= # TRUE for whole year, else its only previous day
-
-# Grafana
-SERVER_HOST= # DNS of the server
-GRAFANA_USER= # grafana admin username
-GRAFANA_PASS= # grafana admin password
