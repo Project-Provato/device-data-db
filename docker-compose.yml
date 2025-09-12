@@ -41,3 +41,7 @@ services:
       - timescale
     # volumes:
       # - grafana-vol:/var/lib/grafana
+
+volumes:
+  grafana-vol:
+    external: true

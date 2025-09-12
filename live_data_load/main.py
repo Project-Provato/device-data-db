@@ -44,9 +44,9 @@ def main(account, timescale_connector, date_init, date_end, csv_folder):
                 "id_api", 
                 "created",
                 
-                "pos_x",
-                "pos_y",
-                "pos_z",
+                "acc_x",
+                "acc_y",
+                "acc_z",
                 
                 "std_x",
                 "std_y",
@@ -92,7 +92,7 @@ def main(account, timescale_connector, date_init, date_end, csv_folder):
         
         has_new_data = copy_data_to_db(
             table_name="DEVICE_DATA_API",
-            columns="id_api, created, pos_x, pos_y, pos_z, std_x, std_y, std_z, max_x, max_y, max_z, temperature, coordinates",
+            columns="id_api, created, acc_x, acc_y, acc_z, std_x, std_y, std_z, max_x, max_y, max_z, temperature, coordinates",
             conflict="id_api, created",
             conn=timescale_connector, 
             data=dev_data[1:]

@@ -45,7 +45,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "feqt5ak97vgg0f"
       },
-      "description": "Export functionality for data by tapping on the panel \"Greece Devices Overview\"\n  `triple dot` -> `inspect` -> `Data` -> `Data options`. \n  Download the file by checking all boxes and pressing the download button.\n ",
+      "description": "  `triple dot` -> `inspect` -> `Data` -> `Data options`. \n  Download the file by checking all boxes and pressing the download button.\n ",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -118,12 +118,7 @@
         },
         "frameIndex": 1,
         "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Last Data"
-          }
-        ]
+        "sortBy": []
       },
       "pluginVersion": "11.4.0",
       "targets": [
@@ -136,7 +131,7 @@
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "SELECT DISTINCT ON (id_api)\r\n  f.name as farm,\r\n  d.name, (d.type) as type, d.breed,\r\n  de.id_api, de.created_at\r\nFROM animals_api AS d\r\nJOIN device_data_api AS de ON de.id_api = d.id_api\r\nLEFT JOIN farms_api as f ON d.farm_id_api = f.id_api\r\nWHERE $__timeFilter(de.created_at)\r\nORDER BY de.id_api, de.created_at DESC;",
+          "rawSql": "SELECT DISTINCT ON (id_api)\r\n  f.name as farm,\r\n  d.name, (d.type) as type, d.breed,\r\n  de.id_api, de.created\r\nFROM animals_api AS d\r\nJOIN device_data_api AS de ON de.id_api = d.id_api\r\nLEFT JOIN farms_api as f ON d.farm_id_api = f.id_api\r\nWHERE $__timeFilter(de.created)\r\nORDER BY de.id_api, de.created DESC;",
           "refId": "SimpleCall",
           "sql": {
             "columns": [
@@ -163,7 +158,7 @@
           "id": "formatTime",
           "options": {
             "outputFormat": "YYYY-MM-DD",
-            "timeField": "created_at",
+            "timeField": "created",
             "timezone": "utc",
             "useTimezone": true
           }
@@ -191,6 +186,7 @@
               "breed": "Breed",
               "collar": "Device",
               "count": "Active Days",
+              "created": "Last Date",
               "created_at": "Last Data Day",
               "farm": "Farm",
               "farm_area": "Area",
@@ -264,10 +260,10 @@
         "layers": [
           {
             "config": {
-              "showLegend": true,
+              "showLegend": false,
               "style": {
                 "color": {
-                  "fixed": "dark-red"
+                  "fixed": "transparent"
                 },
                 "opacity": 0.4,
                 "rotation": {
@@ -298,15 +294,11 @@
                 }
               }
             },
-            "filterData": {
-              "id": "byRefId",
-              "options": "Inactive"
-            },
             "location": {
               "mode": "auto"
             },
             "name": "Inactive",
-            "tooltip": true,
+            "tooltip": false,
             "type": "markers"
           },
           {
@@ -349,10 +341,6 @@
                 }
               }
             },
-            "filterData": {
-              "id": "byRefId",
-              "options": "Active"
-            },
             "location": {
               "mode": "auto"
             },
@@ -385,37 +373,8 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT DISTINCT ON (id_api)\r\n  d.name, d.type, d.breed,\r\n  de.id_api, de.created_at, de.coordinates[0] AS longitude, de.coordinates[1] AS latitude\r\nFROM animals_api AS d\r\nJOIN device_data_api AS de ON de.id_api = d.id_api\r\nWHERE de.created_at > ($__timeTo()::timestamp - INTERVAL '7 days')\r\n AND $__timeFilter(de.created_at)\r\nORDER BY de.id_api, de.created_at DESC;\r\n",
+          "rawSql": "SELECT DISTINCT ON (id_api)\r\n  d.name, d.type, d.breed,\r\n  de.id_api, de.created, de.coordinates[0] AS longitude, de.coordinates[1] AS latitude,\r\n  CASE\r\n      WHEN created < $__timeTo()::timestamp - INTERVAL '7 days' THEN 'True'\r\n      ELSE 'False'\r\n  END AS older_than_7d\r\nFROM animals_api AS d\r\nJOIN device_data_api AS de ON de.id_api = d.id_api\r\nWHERE $__timeFilter(de.created)\r\n  -- AND de.created <= ($__timeTo()::timestamp - INTERVAL '7 days')\r\nORDER BY de.id_api, de.created DESC;",
           "refId": "Active",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        },
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "feqt5ak97vgg0f"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "hide": true,
-          "rawQuery": true,
-          "rawSql": "SELECT DISTINCT ON (id_api)\r\n  d.name, d.type, d.breed,\r\n  de.id_api, de.created_at, de.coordinates[0] AS longitude, de.coordinates[1] AS latitude\r\nFROM animals_api AS d\r\nJOIN device_data_api AS de ON de.id_api = d.id_api\r\nWHERE de.created_at <= ($__timeTo()::timestamp - INTERVAL '7 days')\r\n AND $__timeFilter(de.created_at)\r\nORDER BY de.id_api, de.created_at DESC;",
-          "refId": "Inactive",
           "sql": {
             "columns": [
               {
@@ -435,7 +394,21 @@
           }
         }
       ],
-      "title": "Greece - Active Devices Past 7 Days",
+      "title": "Last Location",
+      "transformations": [
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": [
+              "older_than_7d"
+            ],
+            "keepFields": false,
+            "naming": {
+              "asLabels": false
+            }
+          }
+        }
+      ],
       "type": "geomap"
     },
     {
@@ -508,7 +481,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "celsius"
         },
         "overrides": []
       },
@@ -543,7 +517,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_api, created_at, temperature as temp\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "rawSql": "SELECT id_api, created, temperature as temp\r\nFROM device_data_api\r\nWHERE $__timeFilter(created);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -619,8 +593,6 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
-            "axisSoftMax": 2,
-            "axisSoftMin": -2,
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "bars",
@@ -653,15 +625,17 @@
           },
           "fieldMinMax": false,
           "mappings": [],
+          "max": 2,
+          "min": -2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
-          }
+          },
+          "unit": "accG"
         },
         "overrides": []
       },
@@ -696,7 +670,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_api, created_at, -2 + ((pos_x+32768)/ 65535.0) * 4  as acc_x\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "rawSql": "SELECT id_api, created, -2 + ((acc_x+32768)/ 65535.0) * 4  as acc_x\r\nFROM device_data_api\r\nWHERE $__timeFilter(created);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -809,11 +783,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
-          }
+          },
+          "unit": "accG"
         },
         "overrides": []
       },
@@ -848,7 +822,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_api, created_at, -2 + ((max_x+32768)/ 65535.0) * 4  as acc_x\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "rawSql": "SELECT id_api, created, -2 + ((max_x+32768)/ 65535.0) * 4  as acc_x\r\nFROM device_data_api\r\nWHERE $__timeFilter(created);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -958,15 +932,17 @@
           },
           "fieldMinMax": false,
           "mappings": [],
+          "max": 2,
+          "min": -2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
-          }
+          },
+          "unit": "accG"
         },
         "overrides": []
       },
@@ -1001,7 +977,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_api, created_at, -2 + ((pos_y+32768)/ 65535.0) * 4  as acc_y\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "rawSql": "SELECT id_api, created, -2 + ((acc_y+32768)/ 65535.0) * 4  as acc_y\r\nFROM device_data_api\r\nWHERE $__timeFilter(created);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -1114,11 +1090,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
-          }
+          },
+          "unit": "accG"
         },
         "overrides": []
       },
@@ -1153,7 +1129,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_api, created_at, -2 + ((max_y+32768)/ 65535.0) * 4  as acc_y\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "rawSql": "SELECT id_api, created, -2 + ((max_y+32768)/ 65535.0) * 4  as acc_y\r\nFROM device_data_api\r\nWHERE $__timeFilter(created);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -1263,6 +1239,8 @@
           },
           "fieldMinMax": false,
           "mappings": [],
+          "max": 2,
+          "min": -2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1270,7 +1248,8 @@
                 "color": "green"
               }
             ]
-          }
+          },
+          "unit": "accG"
         },
         "overrides": []
       },
@@ -1305,7 +1284,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_api, created_at, -2 + ((pos_z+32768)/ 65535.0) * 4  as acc_z\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "rawSql": "SELECT id_api, created, -2 + ((acc_z+32768)/ 65535.0) * 4  as acc_z\r\nFROM device_data_api\r\nWHERE $__timeFilter(created);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -1421,7 +1400,8 @@
                 "color": "green"
               }
             ]
-          }
+          },
+          "unit": "accG"
         },
         "overrides": []
       },
@@ -1456,7 +1436,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT id_api, created_at, -2 + ((max_z+32768)/ 65535.0) * 4  as acc_z\r\nFROM device_data_api\r\nWHERE $__timeFilter(created_at);",
+          "rawSql": "SELECT id_api, created, -2 + ((max_z+32768)/ 65535.0) * 4  as acc_z\r\nFROM device_data_api\r\nWHERE $__timeFilter(created);",
           "refId": "Data",
           "sql": {
             "columns": [
@@ -1525,13 +1505,13 @@
     "list": []
   },
   "time": {
-    "from": "now-90d",
+    "from": "now-2d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Generic Preview",
   "uid": "eerhsth6kzu9sa",
-  "version": 50,
+  "version": 23,
   "weekStart": ""
 }
