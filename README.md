@@ -30,7 +30,7 @@ If no Timescale database is available and the functionality of the scripts is be
 docker compose up -d
 ```
 
-This will create a Timescale database using the schema defined by [init.sql](./init.sql). An Adminer container is also set up to provide a web interface for accessing this database.
+This will create a Timescale database using the schema defined by [init.sql](./init.sql). A Grafana container is also set up to provide a web interface for viewing this database.
 
 To destroy the compose containers run:
 
@@ -47,8 +47,8 @@ Once a Timescale database is available and the environment variables are set up,
 ❗**Before running the scripts** two docker volumes need to be created that will save the logs of the python scritps.
 
 ```bash
-docker volume create provato-logs-retrieve
-docker volume create provato-logs-load
+    docker volume create provato-logs-retrieve
+    docker volume create provato-logs-load
 ```
 
 ## Scheduling with Cron
